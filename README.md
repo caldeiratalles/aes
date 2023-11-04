@@ -20,7 +20,8 @@ Antes de usar o programa, certifique-se de que você tenha o Python instalado em
    python aes_program.py
    ```
 
-## Uso
+## Uso(salve o arquivo com extensão .bin)
+Se dado em qualquer momento der algum erro rode novamente a função, foi vereficado que em alguns ambientes ou ide está dando list of index out bound(irreal)
 
 O programa apresenta um menu simples com as seguintes opções:
 
@@ -36,9 +37,7 @@ Escolha a opção "1" no menu. Você será solicitado a fornecer as seguintes in
 
 - Nome do arquivo de saída cifrado: Especifique o nome do arquivo de saída onde os dados criptografados serão salvos.
 
-- Número de rodadas (10 por padrão): O programa usa 10 rodadas de criptografia por padrão, mas você pode especificar um número diferente, se desejar.
-
-O programa gerará uma chave aleatória e usará o AES para criptografar o arquivo de entrada. O arquivo criptografado será salvo com o nome especificado, e a chave usada será exibida na tela.
+O programa gerará uma chave aleatória e usará o AES para criptografar o arquivo de entrada.
 
 ### 2. Descriptografar arquivo
 
@@ -48,19 +47,9 @@ Escolha a opção "2" no menu. Você será solicitado a fornecer as seguintes in
 
 - Nome do arquivo de saída descriptografado: Especifique o nome do arquivo de saída onde os dados descriptografados serão salvos.
 
-- Número de rodadas (10 por padrão): O programa usa 10 rodadas de descriptografia por padrão, mas você pode especificar um número diferente, se desejar.
-
 O programa usará a chave gerada na operação de criptografia para descriptografar o arquivo de entrada. O arquivo descriptografado será salvo com o nome especificado.
 
 ### 3. Sair
 
 Escolha a opção "3" no menu para encerrar o programa.
-
-## Importante
-
-- Certifique-se de manter a chave de criptografia segura, pois ela é necessária para descriptografar os arquivos.
-
-- O programa usa o modo de operação CTR (Counter Mode) para criptografia. Certifique-se de entender como esse modo funciona para garantir a segurança adequada.
-
-- Este programa oferece uma interface de linha de comando simples e pode ser estendido ou integrado em outros projetos conforme necessário.
 
