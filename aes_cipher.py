@@ -1,7 +1,6 @@
-import secrets
+import os
 
-# Tabela S-box
-sbox = (
+sbox = [
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
     0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
     0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15,
@@ -18,144 +17,200 @@ sbox = (
     0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
     0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
     0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-)
+]
 
-# Tabela de números de round constant
-rcon_table = (
-    0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
-)
+sbox_inv = [
+    0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
+    0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
+    0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
+    0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49, 0x6d, 0x8b, 0xd1, 0x25,
+    0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92,
+    0x6c, 0x70, 0x48, 0x50, 0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84,
+    0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05, 0xb8, 0xb3, 0x45, 0x06,
+    0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02, 0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b,
+    0x3a, 0x91, 0x11, 0x41, 0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73,
+    0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8, 0x1c, 0x75, 0xdf, 0x6e,
+    0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89, 0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b,
+    0xfc, 0x56, 0x3e, 0x4b, 0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4,
+    0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f,
+    0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef,
+    0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
+    0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d,
+]
 
+Rcon = [
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+    0x10, 0x11, 0x12, 0x13
+]
 
-def key_generator_and_save():
-    return secrets.token_bytes(16)  # Gera uma chave de 128 bits (16 bytes) aleatoriamente
-
-
-def key_from_file():
-    with open("senha.bin", 'rb') as key_file:
-        key = key_file.read()
-    return key
-
-
-def xor_bytes(a, b):
-    return bytes(x ^ y for x, y in zip(a, b))
-
-
-def substitute_bytes_alt(state, sbox):
-    new_state = bytearray(16)
-    for i, byte in enumerate(state):
-        new_state[i] = sbox[byte]
-    return bytes(new_state)
-
-
-def shift_rows_alt(state):
-    new_state = bytearray(state)
-    new_state[1], new_state[5] = state[5], state[1]
-    new_state[2], new_state[10] = state[10], state[2]
-    new_state[3], new_state[15] = state[15], state[3]
-    new_state[4], new_state[8] = state[8], state[4]
-    new_state[6], new_state[14] = state[14], state[6]
-    new_state[7], new_state[11] = state[11], state[7]
-    new_state[9], new_state[13] = state[13], state[9]
-    new_state[12] = state[12]
-    return bytes(new_state)
+Nk = 4
+Nr = 10
+Nb = 4
 
 
-def mix_columns_alt(state):
-    new_state = bytearray(16)
-    for i in range(4):
-        s0 = state[i]
-        s1 = state[i + 4]
-        s2 = state[i + 8]
-        s3 = state[i + 12]
-        new_state[i] = galois_mul(0x02, s0) ^ galois_mul(0x03, s1) ^ s2 ^ s3
-        new_state[i + 4] = s0 ^ galois_mul(0x02, s1) ^ galois_mul(0x03, s2) ^ s3
-        new_state[i + 8] = s0 ^ s1 ^ galois_mul(0x02, s2) ^ galois_mul(0x03, s3)
-        new_state[i + 12] = galois_mul(0x03, s0) ^ s1 ^ s2 ^ galois_mul(0x02, s3)
-    return bytes(new_state)
+def key_expansion(key):
+    expanded_keys = [0] * 176
 
+    for i in range(16):
+        expanded_keys[i] = key[i]
 
-def galois_mul(a, b):
-    p = 0
-    for _ in range(8):
-        if b & 0x01:
-            p ^= a
-        hi_bit_set = a & 0x80
-        a <<= 1
-        if hi_bit_set:
-            a ^= 0x1b  # 0x1b is the irreducible polynomial x^8 + x^4 + x^3 + x + 1
-        b >>= 1
-    return p % 256
-
-
-def expancion_key(key):
-    key_schedule = list(key)
     for i in range(16, 176):
+        temp = expanded_keys[i - 4:i]
         if i % 16 == 0:
-            temp = key_schedule[i - 4:i]
-            temp = temp[1:] + temp[:1]
-            temp = substitute_bytes_alt(temp, sbox)
-            rcon = rcon_table[i // 16]
-            temp = bytearray(temp)
-            temp[0] ^= rcon
-            key_schedule.extend(xor_bytes(key_schedule[i - 16:i], temp))
-        elif i % 16 == 4:
-            temp = substitute_bytes_alt(key_schedule[i - 4:i], sbox)
-            key_schedule.extend(xor_bytes(key_schedule[i - 16:i], temp))
-        else:
-            temp = xor_bytes(key_schedule[i - 4:i], key_schedule[i - 16:i])
-            key_schedule.extend(temp)
-    return key_schedule
+            temp = [sbox[b] for b in temp]
+            temp = [temp[1], temp[2], temp[3], temp[0]]
+            temp[0] ^= Rcon[i // 16 - 1]
+        for j in range(4):
+            expanded_keys[i] = expanded_keys[i - 16] ^ temp[j]
+    return expanded_keys
 
 
-def encrypt_block(block, key_schedule, num_rounds):
-    ciphertext = xor_bytes(block, key_schedule[:16])
+def adicionar_chave_round(state, key):
+    state_bytes = bytes(state)
+    key_bytes = bytes(key)
 
-    for round in range(1, num_rounds + 1):
-        ciphertext = substitute_bytes_alt(ciphertext, sbox)
-        ciphertext = shift_rows_alt(ciphertext)
-        if round < num_rounds:
-            ciphertext = mix_columns_alt(ciphertext)
-        ciphertext = xor_bytes(ciphertext, key_schedule[round * 16:(round + 1) * 16])
+    result_bytes = bytes(byte1 ^ byte2 for byte1, byte2 in zip(state_bytes, key_bytes))
 
-    return ciphertext
+    return list(result_bytes)
 
 
-def decrypt_block(ciphertext, key_schedule, num_rounds):
-    plaintext = xor_bytes(ciphertext, key_schedule[num_rounds * 16:(num_rounds + 1) * 16])
-
-    for round in range(num_rounds, 0, -1):
-        plaintext = shift_rows_alt(plaintext)
-        plaintext = substitute_bytes_alt(plaintext, sbox)
-        plaintext = xor_bytes(plaintext, key_schedule[round * 16:(round + 1) * 16])
-        if round > 1:
-            plaintext = mix_columns_alt(plaintext)
-
-    return plaintext
+def sub_bytes(state, inv=False):
+    return [sbox_inv[b] if inv else sbox[b] for b in state]
 
 
-def encrypt_file(input_file, output_file, key, num_rounds=10):
-    key_schedule = expancion_key(key)
-    block_size = 16
+def trocar_linhas_matrix(state, inv=False):
+    offset = 1 if not inv else 3
 
-    with open(input_file, 'rb') as f_in, open(output_file, 'wb') as f_out:
-        while True:
-            block = f_in.read(block_size)
-            if not block:
-                break
-            if len(block) < block_size:
-                block += bytes(block_size - len(block))
-            encrypted_block = encrypt_block(block, key_schedule, num_rounds)
-            f_out.write(encrypted_block)
+    while len(state) % 16 != 0:
+        state.append(0)
+
+    new_state = [0] * len(state)
+
+    if offset == 3:
+        for j in range(4):
+            for i in range(4):
+                new_state[i + j * 4] = state[i + ((j + offset) % 4) * 4]
+        return new_state
+
+    for j in range(4):
+        for i in range(4):
+            new_state[i + j * 4] = state[i + ((j + offset) % 4) * 4]
+    return new_state
 
 
-def decrypt_file(input_file, output_file, key, num_rounds=10):
-    key_schedule = expancion_key(key)
+def xtime(a):
+    return (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
 
-    with open(input_file, 'rb') as f_in, open(output_file, 'wb') as f_out:
-        while True:
-            block = f_in.read(16)
-            if not block:
-                break
-            decrypted_block = decrypt_block(block, key_schedule, num_rounds)
-            f_out.write(decrypted_block)
 
+def mix_columns(state):
+    for i in range(4):
+        column = state[i:i + 16:4]
+        try:
+            column = mix_single_column(column)
+            state[i:i + 16:4] = column
+            return state
+        except:
+            print("Ocorreu um erro, tentando novamente")
+            column = mix_single_column(column)
+            state[i:i + 16:4] = column
+            return state
+
+
+def mix_single_column(column):
+    a = column[0]
+    b = column[1]
+    c = column[2]
+    d = column[3]
+
+    column[0] = (
+            multiply(a, 0x02) ^ multiply(b, 0x03) ^ c ^ d
+    )
+    column[1] = (
+            a ^ multiply(b, 0x02) ^ multiply(c, 0x03) ^ d
+    )
+    column[2] = (
+            a ^ b ^ multiply(c, 0x02) ^ multiply(d, 0x03)
+    )
+    column[3] = (
+            multiply(a, 0x03) ^ b ^ c ^ multiply(d, 0x02)
+    )
+
+    return column
+
+
+def multiply(x, y):
+    result = 0
+    for _ in range(8):
+        if y & 1:
+            result ^= x
+        x = x << 1
+        if x & 0x100:
+            x ^= 0x11B
+        y = y >> 1
+    return result
+
+
+def aes_encrypt(block, key):
+    expanded_keys = key_expansion(key)
+    state = adicionar_chave_round(block, expanded_keys[0])
+    for i in range(1, 10):
+        state = sub_bytes(state)
+        state = trocar_linhas_matrix(state)
+        state = mix_columns(state)
+        state = adicionar_chave_round(state, expanded_keys[i])
+    state = sub_bytes(state)
+    state = trocar_linhas_matrix(state)
+    state = adicionar_chave_round(state, expanded_keys[10])
+    return state
+
+
+def aes_decrypt(block, key):
+    expanded_keys = key_expansion(key)
+    state = adicionar_chave_round(block, expanded_keys[10])
+    for i in range(9, 0, -1):
+        state = trocar_linhas_matrix(state, inv=True)
+        state = sub_bytes(state, inv=True)
+        state = adicionar_chave_round(state, expanded_keys[i])
+        state = mix_columns(state)
+    state = trocar_linhas_matrix(state, inv=True)
+    state = sub_bytes(state, inv=True)
+    state = adicionar_chave_round(state, expanded_keys[0])
+    return state
+
+
+def encrypt_file(input_file, output_file, key):
+    with open(input_file, 'rb') as f:
+        plaintext = f.read()
+    ciphertext = b''
+    for block_start in range(0, len(plaintext), 16):
+        block = plaintext[block_start:block_start + 16]
+        encrypted_block = aes_encrypt(list(block), key)
+        ciphertext += bytes(encrypted_block)
+    with open(output_file, 'wb') as f:
+        f.write(ciphertext)
+
+
+def decrypt_file(input_file, output_file, key):
+    with open(input_file, 'rb') as f:
+        ciphertext = f.read()
+    plaintext = b''
+    for block_start in range(0, len(ciphertext), 16):
+        block = ciphertext[block_start:block_start + 16]
+        decrypted_block = aes_decrypt(block, key)
+        plaintext += bytes(decrypted_block)
+    with open(output_file, 'wb') as f:
+        f.write(plaintext)
+
+
+def generate_and_save_key():
+    key_bytes = os.urandom(16)
+    with open("key.bin", 'wb') as f:
+        f.write(key_bytes)
+    return key_bytes
+
+
+def load_key():
+    with open("key.bin", 'rb') as f:
+        key_bytes = f.read()
+    return key_bytes
